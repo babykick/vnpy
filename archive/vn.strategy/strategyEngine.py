@@ -7,7 +7,6 @@ from pymongo.errors import *
 
 from eventEngine import *
 
-
 # 常量定义
 OFFSET_OPEN = '0'           # 开仓
 OFFSET_CLOSE = '1'          # 平仓
@@ -18,12 +17,9 @@ DIRECTION_SELL = '1'        # 卖出
 PRICETYPE_LIMIT = '2'       # 限价
 
 
-
-########################################################################
 class Tick:
     """Tick数据对象"""
 
-    #----------------------------------------------------------------------
     def __init__(self, symbol):
         """Constructor"""
         self.symbol = symbol        # 合约代码
@@ -67,11 +63,10 @@ class Tick:
         self.askVolume5 = 0        
 
 
-########################################################################
 class Trade:
     """成交数据对象"""
 
-    #----------------------------------------------------------------------
+    
     def __init__(self, symbol):
         """Constructor"""
         self.symbol = symbol        # 合约代码
@@ -83,13 +78,11 @@ class Trade:
         self.offset = None          # 开平
         self.price = 0              # 成交价
         self.volume = 0             # 成交量
- 
 
-########################################################################
+
 class Order:
     """报单数据对象"""
 
-    #----------------------------------------------------------------------
     def __init__(self, symbol):
         """Constructor"""
         self.symbol = symbol        # 合约代码
@@ -111,15 +104,12 @@ class Order:
         self.status = ''            # 报单状态代码
 
 
-########################################################################
 class StopOrder:
     """
     停止单对象
     用于实现价格突破某一水平后自动追入
     即通常的条件单和止损单
     """
-
-    #----------------------------------------------------------------------
     def __init__(self, symbol, direction, offset, price, volume, strategy):
         """Constructor"""
         self.symbol = symbol
@@ -130,11 +120,9 @@ class StopOrder:
         self.strategy = strategy
 
 
-########################################################################
 class StrategyEngine(object):
     """策略引擎"""
-
-    #----------------------------------------------------------------------
+    
     def __init__(self, eventEngine, mainEngine):
         """Constructor"""
         self.__eventEngine = eventEngine
@@ -176,7 +164,6 @@ class StrategyEngine(object):
         self.__connectMongo()
         self.__registerEvent()
         
-    #----------------------------------------------------------------------
     def createStrategy(self, strategyName, strategySymbol, strategyClass, strategySetting):
         """创建策略"""
         strategy = strategyClass(strategyName, strategySymbol, self)
@@ -189,7 +176,6 @@ class StrategyEngine(object):
         # 注册策略监听
         self.registerStrategy(strategySymbol, strategy)
     
-    #----------------------------------------------------------------------
     def __connectMongo(self):
         """连接MongoDB数据库"""
         try:
@@ -200,7 +186,6 @@ class StrategyEngine(object):
         except ConnectionFailure:
             self.writeLog(u'策略引擎连接MongoDB失败')
 
-    #----------------------------------------------------------------------
     def __recordTick(self, data):
         """将Tick数据插入到MongoDB中"""
         if self.__mongoConnected:
@@ -208,7 +193,6 @@ class StrategyEngine(object):
             data['date'] = self.today
             self.__mongoTickDB[symbol].insert(data)
         
-    #----------------------------------------------------------------------
     def loadTick(self, symbol, dt):
         """从MongoDB中读取Tick数据"""
         if self.__mongoConnected:
@@ -218,7 +202,6 @@ class StrategyEngine(object):
         else:
             return None  
 
-    #----------------------------------------------------------------------
     def __updateMarketData(self, event):
         """行情更新"""
         data = event.dict_['data']
@@ -277,7 +260,6 @@ class StrategyEngine(object):
         # 将数据插入MongoDB数据库，实盘建议另开程序记录TICK数据
         self.__recordTick(data)
             
-    #----------------------------------------------------------------------
     def __processStopOrder(self, tick):
         """处理停止单"""
         symbol = tick.symbol
@@ -324,7 +306,6 @@ class StrategyEngine(object):
             if not listSO:
                 del self.__dictStopOrder[symbol]
     
-    #----------------------------------------------------------------------
     def __updateOrder(self, event):
         """报单更新"""
         data = event.dict_['data']
@@ -357,7 +338,6 @@ class StrategyEngine(object):
         # 记录该Order的数据
         self.__dictOrder[orderRef] = data
     
-    #----------------------------------------------------------------------
     def __updateTrade(self, event):
         """成交更新"""
         print 'updateTrade'
@@ -381,8 +361,7 @@ class StrategyEngine(object):
             # 推送给策略
             strategy = self.__dictOrderRefStrategy[orderRef]
             strategy.onTrade(trade)            
-        
-    #----------------------------------------------------------------------
+
     def sendOrder(self, symbol, direction, offset, price, volume, strategy):
         """
         发单（仅允许限价单）
@@ -410,7 +389,6 @@ class StrategyEngine(object):
         
         return ref
 
-    #----------------------------------------------------------------------
     def cancelOrder(self, orderRef):
         """
         撤单
@@ -425,22 +403,19 @@ class StrategyEngine(object):
                                         orderRef,
                                         order['FrontID'],
                                         order['SessionID'])
-        
-    #----------------------------------------------------------------------
+
     def __registerEvent(self):
         """注册事件监听"""
         self.__eventEngine.register(EVENT_MARKETDATA, self.__updateMarketData)
         self.__eventEngine.register(EVENT_ORDER, self.__updateOrder)
         self.__eventEngine.register(EVENT_TRADE ,self.__updateTrade)
-        
-    #----------------------------------------------------------------------
+
     def writeLog(self, log):
         """写日志"""
         event = Event(type_=EVENT_LOG)
         event.dict_['log'] = log
         self.__eventEngine.put(event)
-        
-    #----------------------------------------------------------------------
+
     def registerStrategy(self, symbol, strategy):
         """注册策略对合约TICK数据的监听"""
         # 尝试获取监听该合约代码的策略的列表，若无则创建
@@ -454,7 +429,6 @@ class StrategyEngine(object):
         if strategy not in listStrategy:
             listStrategy.append(strategy)
 
-    #----------------------------------------------------------------------
     def placeStopOrder(self, symbol, direction, offset, price, volume, strategy):
         """
         下停止单（运行于本地引擎中）
@@ -474,8 +448,7 @@ class StrategyEngine(object):
         listSO.append(so)
         
         return so
-    
-    #----------------------------------------------------------------------
+
     def cancelStopOrder(self, so):
         """撤销停止单"""
         symbol = so.symbol
@@ -490,25 +463,21 @@ class StrategyEngine(object):
                 del self.__dictStopOrder[symbol]
         except KeyError:
             pass
-        
-    #----------------------------------------------------------------------
+
     def startAll(self):
         """启动所有策略"""
         for strategy in self.dictStrategy.values():
             strategy.start()
             
-    #----------------------------------------------------------------------
     def stopAll(self):
         """停止所有策略"""
         for strategy in self.dictStrategy.values():
             strategy.stop()
 
 
-########################################################################
 class StrategyTemplate(object):
     """策略模板"""
 
-    #----------------------------------------------------------------------
     def __init__(self, name, symbol, engine):
         """Constructor"""
         self.name = name            # 策略名称（注意唯一性）
@@ -517,32 +486,26 @@ class StrategyTemplate(object):
         
         self.trading = False        # 策略是否启动交易
         
-    #----------------------------------------------------------------------
     def onTick(self, tick):
         """行情更新"""
         raise NotImplementedError
     
-    #----------------------------------------------------------------------
     def onTrade(self, trade):
         """交易更新"""
         raise NotImplementedError
         
-    #----------------------------------------------------------------------
     def onOrder(self, order):
         """报单更新"""
         raise NotImplementedError
     
-    #----------------------------------------------------------------------
     def onStopOrder(self, orderRef):
         """停止单更新"""
         raise NotImplementedError
     
-    #----------------------------------------------------------------------
     def onBar(self, o, h, l, c, volume, time):
         """K线数据更新"""
         raise NotImplementedError
         
-    #----------------------------------------------------------------------
     def start(self):
         """
         启动交易
@@ -552,7 +515,6 @@ class StrategyTemplate(object):
         self.trading = True
         self.engine.writeLog(self.name + u'开始运行')
         
-    #----------------------------------------------------------------------
     def stop(self):
         """
         停止交易
@@ -561,7 +523,6 @@ class StrategyTemplate(object):
         self.trading = False
         self.engine.writeLog(self.name + u'停止运行')
         
-    #----------------------------------------------------------------------
     def loadSetting(self, setting):
         """
         载入设置
@@ -569,7 +530,6 @@ class StrategyTemplate(object):
         """
         raise NotImplementedError
         
-    #----------------------------------------------------------------------
     def buy(self, price, volume, stopOrder=False):
         """买入开仓"""
         if self.trading:
@@ -584,7 +544,6 @@ class StrategyTemplate(object):
         else:
             return None
     
-    #----------------------------------------------------------------------
     def cover(self, price, volume, StopOrder=False):
         """买入平仓"""
         if self.trading:
@@ -599,7 +558,6 @@ class StrategyTemplate(object):
         else:
             return None
     
-    #----------------------------------------------------------------------
     def sell(self, price, volume, stopOrder=False):
         """卖出平仓"""
         if self.trading:
@@ -614,7 +572,6 @@ class StrategyTemplate(object):
         else:
             return None
     
-    #----------------------------------------------------------------------
     def short(self, price, volume, stopOrder=False):
         """卖出开仓"""
         if self.trading:
@@ -629,14 +586,10 @@ class StrategyTemplate(object):
         else:
             return None
     
-    #----------------------------------------------------------------------
     def cancelOrder(self, orderRef):
         """撤单"""
         self.engine.cancelOrder(orderRef)
         
-    #----------------------------------------------------------------------
     def cancelStopOrder(self, so):
         """撤销停止单"""
         self.engine.cancelStopOrder(so)
-    
-    
