@@ -12,7 +12,7 @@ from vnctptd import TdApi
 from eventEngine import *
 from ctp_data_type import defineDict
 
-#----------------------------------------------------------------------
+
 def print_dict(d):
     """打印API收到的字典，该函数主要用于开发时的debug"""
     print '-'*60
@@ -20,9 +20,8 @@ def print_dict(d):
     l.sort()
     for key in l:
         print key, ':', d[key]
-    
 
-########################################################################
+
 class DemoMdApi(MdApi):
     """
     Demo中的行情API封装
@@ -32,8 +31,6 @@ class DemoMdApi(MdApi):
     登陆 login
     订阅合约 subscribe
     """
-
-    #----------------------------------------------------------------------
     def __init__(self, eventEngine):
         """
         API对象的初始化函数
@@ -57,7 +54,6 @@ class DemoMdApi(MdApi):
         # 初始化.con文件的保存目录为\mdconnection，注意这个目录必须已存在，否则会报错
         self.createFtdcMdApi(os.getcwd() + '\\mdconnection\\')                
         
-    #----------------------------------------------------------------------
     def onFrontConnected(self):
         """服务器连接"""
         event = Event(type_=EVENT_LOG)
@@ -73,20 +69,17 @@ class DemoMdApi(MdApi):
             self._reqid = self._reqid + 1
             self.reqUserLogin(req, self._reqid)
             
-    #----------------------------------------------------------------------  
     def onFrontDisconnected(self, n):
         """服务器断开"""
         event = Event(type_=EVENT_LOG)
         event.dict_['log'] = u'行情服务器连接断开'
         self._eventEngine.put(event)
         
-    #---------------------------------------------------------------------- 
     def onHeartBeatWarning(self, n):
         """心跳报警"""
         # 因为API的心跳报警比较常被触发，且与API工作关系不大，因此选择忽略
         pass
     
-    #----------------------------------------------------------------------   
     def onRspError(self, error, n, last):
         """错误回报"""
         event = Event(type_=EVENT_LOG)
@@ -94,7 +87,6 @@ class DemoMdApi(MdApi):
         event.dict_['log'] = log
         self._eventEngine.put(event)
     
-    #----------------------------------------------------------------------
     def onRspUserLogin(self, data, error, n, last):
         """登陆回报"""
         event = Event(type_=EVENT_LOG)
@@ -112,7 +104,6 @@ class DemoMdApi(MdApi):
             #for instrument in self._setSubscribed:
                 #self.subscribe(instrument[0], instrument[1])
                 
-    #---------------------------------------------------------------------- 
     def onRspUserLogout(self, data, error, n, last):
         """登出回报"""
         event = Event(type_=EVENT_LOG)
@@ -125,19 +116,16 @@ class DemoMdApi(MdApi):
         event.dict_['log'] = log
         self._eventEngine.put(event)
         
-    #----------------------------------------------------------------------  
     def onRspSubMarketData(self, data, error, n, last):
         """订阅合约回报"""
         # 通常不在乎订阅错误，选择忽略
         pass
         
-    #----------------------------------------------------------------------  
     def onRspUnSubMarketData(self, data, error, n, last):
         """退订合约回报"""
         # 同上
         pass  
         
-    #----------------------------------------------------------------------  
     def onRtnDepthMarketData(self, data):
         """行情推送"""
         # 行情推送收到后，同时触发常规行情事件，以及特定合约行情事件，用于满足不同类型的监听
@@ -152,22 +140,18 @@ class DemoMdApi(MdApi):
         event2.dict_['data'] = data
         self._eventEngine.put(event2)
         
-    #---------------------------------------------------------------------- 
     def onRspSubForQuoteRsp(self, data, error, n, last):
         """订阅期权询价"""
         pass
         
-    #----------------------------------------------------------------------
     def onRspUnSubForQuoteRsp(self, data, error, n, last):
         """退订期权询价"""
         pass 
-        
-    #---------------------------------------------------------------------- 
+
     def onRtnForQuoteRsp(self, data):
         """期权询价推送"""
         pass        
-        
-    #----------------------------------------------------------------------
+
     def login(self, address, userid, password, brokerid):
         """连接服务器"""
         self._userid = userid
@@ -179,8 +163,7 @@ class DemoMdApi(MdApi):
         
         # 初始化连接，成功会调用onFrontConnected
         self.init()
-        
-    #----------------------------------------------------------------------
+
     def subscribe(self, instrumentid, exchangeid):
         """订阅合约"""
         self.subscribeMarketData(instrumentid)
@@ -189,7 +172,6 @@ class DemoMdApi(MdApi):
         self._setSubscribed.add(instrument)
 
 
-########################################################################
 class DemoTdApi(TdApi):
     """
     Demo中的交易API封装
@@ -202,8 +184,6 @@ class DemoTdApi(TdApi):
     sendOrder 发单
     cancelOrder 撤单
     """
-
-    #----------------------------------------------------------------------
     def __init__(self, eventEngine):
         """API对象的初始化函数"""
         super(DemoTdApi, self).__init__()
@@ -228,7 +208,6 @@ class DemoTdApi(TdApi):
         # 初始化.con文件的保存目录为\tdconnection
         self.createFtdcTraderApi(os.getcwd() + '\\tdconnection\\')    
         
-    #----------------------------------------------------------------------
     def onFrontConnected(self):
         """服务器连接"""
         event = Event(type_=EVENT_LOG)
@@ -243,25 +222,21 @@ class DemoTdApi(TdApi):
             req['BrokerID'] = self._brokerid
             self._reqid = self._reqid + 1
             self.reqUserLogin(req, self._reqid)
-    
-    #----------------------------------------------------------------------
+
     def onFrontDisconnected(self, n):
         """服务器断开"""
         event = Event(type_=EVENT_LOG)
         event.dict_['log'] = u'交易服务器连接断开'
         self._eventEngine.put(event)
     
-    #----------------------------------------------------------------------
     def onHeartBeatWarning(self, n):
         """"""
         pass
     
-    #----------------------------------------------------------------------
     def onRspAuthenticate(self, data, error, n, last):
         """"""
         pass
     
-    #----------------------------------------------------------------------
     def onRspUserLogin(self, data, error, n, last):
         """登陆回报"""
         event = Event(type_=EVENT_LOG)
@@ -276,7 +251,6 @@ class DemoTdApi(TdApi):
         
         self.getSettlement()    # 登录完成后立即查询结算信息
     
-    #----------------------------------------------------------------------
     def onRspUserLogout(self, data, error, n, last):
         """登出回报"""
         event = Event(type_=EVENT_LOG)
@@ -289,17 +263,14 @@ class DemoTdApi(TdApi):
         event.dict_['log'] = log
         self._eventEngine.put(event)
     
-    #----------------------------------------------------------------------
     def onRspUserPasswordUpdate(self, data, error, n, last):
         """"""
         pass
     
-    #----------------------------------------------------------------------
     def onRspTradingAccountPasswordUpdate(self, data, error, n, last):
         """"""
         pass
     
-    #----------------------------------------------------------------------
     def onRspOrderInsert(self, data, error, n, last):
         """发单错误（柜台）"""
         event = Event(type_=EVENT_LOG)
@@ -307,17 +278,14 @@ class DemoTdApi(TdApi):
         event.dict_['log'] = log
         self._eventEngine.put(event)   
     
-    #----------------------------------------------------------------------
     def onRspParkedOrderInsert(self, data, error, n, last):
         """"""
         pass
     
-    #----------------------------------------------------------------------
     def onRspParkedOrderAction(self, data, error, n, last):
         """"""
         pass
     
-    #----------------------------------------------------------------------
     def onRspOrderAction(self, data, error, n, last):
         """撤单错误（柜台）"""
         event = Event(type_=EVENT_LOG)
@@ -325,12 +293,10 @@ class DemoTdApi(TdApi):
         event.dict_['log'] = log
         self._eventEngine.put(event)
     
-    #----------------------------------------------------------------------
     def onRspQueryMaxOrderVolume(self, data, error, n, last):
         """"""
         pass
     
-    #----------------------------------------------------------------------
     def onRspSettlementInfoConfirm(self, data, error, n, last):
         """确认结算信息回报"""
         event = Event(type_=EVENT_LOG)
@@ -341,52 +307,42 @@ class DemoTdApi(TdApi):
         event = Event(type_=EVENT_TDLOGIN)
         self._eventEngine.put(event)    
     
-    #----------------------------------------------------------------------
     def onRspRemoveParkedOrder(self, data, error, n, last):
         """"""
         pass
     
-    #----------------------------------------------------------------------
     def onRspRemoveParkedOrderAction(self, data, error, n, last):
         """"""
         pass
     
-    #----------------------------------------------------------------------
     def onRspExecOrderInsert(self, data, error, n, last):
         """"""
         pass
     
-    #----------------------------------------------------------------------
     def onRspExecOrderAction(self, data, error, n, last):
         """"""
         pass
     
-    #----------------------------------------------------------------------
     def onRspForQuoteInsert(self, data, error, n, last):
         """"""
         pass
     
-    #----------------------------------------------------------------------
     def onRspQuoteInsert(self, data, error, n, last):
         """"""
         pass
     
-    #----------------------------------------------------------------------
     def onRspQuoteAction(self, data, error, n, last):
         """"""
         pass
     
-    #----------------------------------------------------------------------
     def onRspQryOrder(self, data, error, n, last):
         """"""
         pass
     
-    #----------------------------------------------------------------------
     def onRspQryTrade(self, data, error, n, last):
         """"""
         pass
     
-    #----------------------------------------------------------------------
     def onRspQryInvestorPosition(self, data, error, n, last):
         """持仓查询回报"""
         if error['ErrorID'] == 0:
@@ -399,7 +355,6 @@ class DemoTdApi(TdApi):
             event.dict_['log'] = log
             self._eventEngine.put(event)
     
-    #----------------------------------------------------------------------
     def onRspQryTradingAccount(self, data, error, n, last):
         """资金账户查询回报"""
         if error['ErrorID'] == 0:
@@ -412,7 +367,6 @@ class DemoTdApi(TdApi):
             event.dict_['log'] = log
             self._eventEngine.put(event)
     
-    #----------------------------------------------------------------------
     def onRspQryInvestor(self, data, error, n, last):
         """投资者查询回报"""
         if error['ErrorID'] == 0:
@@ -425,32 +379,26 @@ class DemoTdApi(TdApi):
             event.dict_['log'] = log
             self._eventEngine.put(event)
     
-    #----------------------------------------------------------------------
     def onRspQryTradingCode(self, data, error, n, last):
         """"""
         pass
     
-    #----------------------------------------------------------------------
     def onRspQryInstrumentMarginRate(self, data, error, n, last):
         """"""
         pass
     
-    #----------------------------------------------------------------------
     def onRspQryInstrumentCommissionRate(self, data, error, n, last):
         """"""
         pass
     
-    #----------------------------------------------------------------------
     def onRspQryExchange(self, data, error, n, last):
         """"""
         pass
     
-    #----------------------------------------------------------------------
     def onRspQryProduct(self, data, error, n, last):
         """"""
         pass
     
-    #----------------------------------------------------------------------
     def onRspQryInstrument(self, data, error, n, last):
         """
         合约查询回报
@@ -469,12 +417,10 @@ class DemoTdApi(TdApi):
             event.dict_['log'] = log
             self._eventEngine.put(event)   
     
-    #----------------------------------------------------------------------
     def onRspQryDepthMarketData(self, data, error, n, last):
         """"""
         pass
     
-    #----------------------------------------------------------------------
     def onRspQrySettlementInfo(self, data, error, n, last):
         """查询结算信息回报"""
         if last:
@@ -485,102 +431,82 @@ class DemoTdApi(TdApi):
             
             self.confirmSettlement()    # 查询完成后立即确认结算信息
     
-    #----------------------------------------------------------------------
     def onRspQryTransferBank(self, data, error, n, last):
         """"""
         pass
     
-    #----------------------------------------------------------------------
     def onRspQryInvestorPositionDetail(self, data, error, n, last):
         """"""
         pass
     
-    #----------------------------------------------------------------------
     def onRspQryNotice(self, data, error, n, last):
         """"""
         pass
     
-    #----------------------------------------------------------------------
     def onRspQrySettlementInfoConfirm(self, data, error, n, last):
         """"""
         pass
-    
-    #----------------------------------------------------------------------
+
     def onRspQryInvestorPositionCombineDetail(self, data, error, n, last):
         """"""
         pass
     
-    #----------------------------------------------------------------------
     def onRspQryCFMMCTradingAccountKey(self, data, error, n, last):
         """"""
         pass
     
-    #----------------------------------------------------------------------
     def onRspQryEWarrantOffset(self, data, error, n, last):
         """"""
         pass
     
-    #----------------------------------------------------------------------
     def onRspQryInvestorProductGroupMargin(self, data, error, n, last):
         """"""
         pass
     
-    #----------------------------------------------------------------------
     def onRspQryExchangeMarginRate(self, data, error, n, last):
         """"""
         pass
     
-    #----------------------------------------------------------------------
     def onRspQryExchangeMarginRateAdjust(self, data, error, n, last):
         """"""
         pass
     
-    #----------------------------------------------------------------------
     def onRspQryExchangeRate(self, data, error, n, last):
         """"""
         pass
     
-    #----------------------------------------------------------------------
     def onRspQrySecAgentACIDMap(self, data, error, n, last):
         """"""
         pass
     
-    #----------------------------------------------------------------------
     def onRspQryOptionInstrTradeCost(self, data, error, n, last):
         """"""
         pass
     
-    #----------------------------------------------------------------------
     def onRspQryOptionInstrCommRate(self, data, error, n, last):
         """"""
         pass
     
-    #----------------------------------------------------------------------
     def onRspQryExecOrder(self, data, error, n, last):
         """"""
         pass
     
-    #----------------------------------------------------------------------
     def onRspQryForQuote(self, data, error, n, last):
         """"""
         pass
     
-    #----------------------------------------------------------------------
     def onRspQryQuote(self, data, error, n, last):
         """"""
         pass
     
-    #----------------------------------------------------------------------
     def onRspQryTransferSerial(self, data, error, n, last):
         """"""
         pass
     
-    #----------------------------------------------------------------------
     def onRspQryAccountregister(self, data, error, n, last):
         """"""
         pass
     
-    #----------------------------------------------------------------------
     def onRspError(self, error, n, last):
         """错误回报"""
         event = Event(type_=EVENT_LOG)
@@ -588,7 +514,6 @@ class DemoTdApi(TdApi):
         event.dict_['log'] = log
         self._eventEngine.put(event)
     
-    #----------------------------------------------------------------------
     def onRtnOrder(self, data):
         """报单回报"""
         # 更新最大报单编号
@@ -605,7 +530,6 @@ class DemoTdApi(TdApi):
         event2.dict_['data'] = data
         self._eventEngine.put(event2)
     
-    #----------------------------------------------------------------------
     def onRtnTrade(self, data):
         """成交回报"""
         # 常规成交事件
@@ -618,7 +542,6 @@ class DemoTdApi(TdApi):
         event2.dict_['data'] = data
         self._eventEngine.put(event2)
     
-    #----------------------------------------------------------------------
     def onErrRtnOrderInsert(self, data, error):
         """发单错误回报（交易所）"""
         event = Event(type_=EVENT_LOG)
@@ -626,7 +549,6 @@ class DemoTdApi(TdApi):
         event.dict_['log'] = log
         self._eventEngine.put(event)
     
-    #----------------------------------------------------------------------
     def onErrRtnOrderAction(self, data, error):
         """撤单错误回报（交易所）"""
         event = Event(type_=EVENT_LOG)
@@ -634,202 +556,162 @@ class DemoTdApi(TdApi):
         event.dict_['log'] = log
         self._eventEngine.put(event)
     
-    #----------------------------------------------------------------------
     def onRtnInstrumentStatus(self, data):
         """"""
         pass
-    
-    #----------------------------------------------------------------------
+
     def onRtnTradingNotice(self, data):
         """"""
         pass
-    
-    #----------------------------------------------------------------------
+
     def onRtnErrorConditionalOrder(self, data):
         """"""
         pass
-    
-    #----------------------------------------------------------------------
+
     def onRtnExecOrder(self, data):
         """"""
         pass
-    
-    #----------------------------------------------------------------------
+
     def onErrRtnExecOrderInsert(self, data, error):
         """"""
         pass
-    
-    #----------------------------------------------------------------------
+
     def onErrRtnExecOrderAction(self, data, error):
         """"""
         pass
-    
-    #----------------------------------------------------------------------
+
     def onErrRtnForQuoteInsert(self, data, error):
         """"""
         pass
-    
-    #----------------------------------------------------------------------
+
     def onRtnQuote(self, data):
         """"""
         pass
-    
-    #----------------------------------------------------------------------
+
     def onErrRtnQuoteInsert(self, data, error):
         """"""
         pass
-    
-    #----------------------------------------------------------------------
+
     def onErrRtnQuoteAction(self, data, error):
         """"""
         pass
-    
-    #----------------------------------------------------------------------
+
     def onRtnForQuoteRsp(self, data):
         """"""
         pass
-    
-    #----------------------------------------------------------------------
+
     def onRspQryContractBank(self, data, error, n, last):
         """"""
         pass
-    
-    #----------------------------------------------------------------------
+
     def onRspQryParkedOrder(self, data, error, n, last):
         """"""
         pass
-    
-    #----------------------------------------------------------------------
+  
     def onRspQryParkedOrderAction(self, data, error, n, last):
         """"""
         pass
-    
-    #----------------------------------------------------------------------
+
     def onRspQryTradingNotice(self, data, error, n, last):
         """"""
         pass
-    
-    #----------------------------------------------------------------------
+
     def onRspQryBrokerTradingParams(self, data, error, n, last):
         """"""
         pass
-    
-    #----------------------------------------------------------------------
+
     def onRspQryBrokerTradingAlgos(self, data, error, n, last):
         """"""
         pass
-    
-    #----------------------------------------------------------------------
+
     def onRtnFromBankToFutureByBank(self, data):
         """"""
         pass
-    
-    #----------------------------------------------------------------------
+
     def onRtnFromFutureToBankByBank(self, data):
         """"""
         pass
-    
-    #----------------------------------------------------------------------
+ 
     def onRtnRepealFromBankToFutureByBank(self, data):
         """"""
         pass
-    
-    #----------------------------------------------------------------------
+
     def onRtnRepealFromFutureToBankByBank(self, data):
         """"""
         pass
-    
-    #----------------------------------------------------------------------
+
     def onRtnFromBankToFutureByFuture(self, data):
         """"""
         pass
-    
-    #----------------------------------------------------------------------
+ 
     def onRtnFromFutureToBankByFuture(self, data):
         """"""
         pass
-    
-    #----------------------------------------------------------------------
+
     def onRtnRepealFromBankToFutureByFutureManual(self, data):
         """"""
         pass
-    
-    #----------------------------------------------------------------------
+ 
     def onRtnRepealFromFutureToBankByFutureManual(self, data):
         """"""
         pass
-    
-    #----------------------------------------------------------------------
+ 
     def onRtnQueryBankBalanceByFuture(self, data):
         """"""
         pass
-    
-    #----------------------------------------------------------------------
+
     def onErrRtnBankToFutureByFuture(self, data, error):
         """"""
         pass
-    
-    #----------------------------------------------------------------------
+
     def onErrRtnFutureToBankByFuture(self, data, error):
         """"""
         pass
-    
-    #----------------------------------------------------------------------
+
     def onErrRtnRepealBankToFutureByFutureManual(self, data, error):
         """"""
         pass
-    
-    #----------------------------------------------------------------------
+
     def onErrRtnRepealFutureToBankByFutureManual(self, data, error):
         """"""
         pass
-    
-    #----------------------------------------------------------------------
+
     def onErrRtnQueryBankBalanceByFuture(self, data, error):
         """"""
         pass
-    
-    #----------------------------------------------------------------------
+
     def onRtnRepealFromBankToFutureByFuture(self, data):
         """"""
         pass
-    
-    #----------------------------------------------------------------------
+
     def onRtnRepealFromFutureToBankByFuture(self, data):
         """"""
         pass
-    
-    #----------------------------------------------------------------------
+
     def onRspFromBankToFutureByFuture(self, data, error, n, last):
         """"""
         pass
-    
-    #----------------------------------------------------------------------
+
     def onRspFromFutureToBankByFuture(self, data, error, n, last):
         """"""
         pass
-    
-    #----------------------------------------------------------------------
+
     def onRspQueryBankAccountMoneyByFuture(self, data, error, n, last):
         """"""
         pass
-    
-    #----------------------------------------------------------------------
+ 
     def onRtnOpenAccountByBank(self, data):
         """"""
         pass
-    
-    #----------------------------------------------------------------------
+
     def onRtnCancelAccountByBank(self, data):
         """"""
         pass
-    
-    #----------------------------------------------------------------------
+
     def onRtnChangeAccountByBank(self, data):
         """"""
         pass
-    
-    #----------------------------------------------------------------------
+
     def login(self, address, userid, password, brokerid):
         """连接服务器"""
         self._userid = userid
@@ -845,26 +727,22 @@ class DemoTdApi(TdApi):
         
         # 初始化连接，成功会调用onFrontConnected
         self.init()    
-        
-    #----------------------------------------------------------------------
+
     def getInstrument(self):
         """查询合约"""
         self._reqid = self._reqid + 1
         self.reqQryInstrument({}, self._reqid)
-        
-    #----------------------------------------------------------------------
+
     def getAccount(self):
         """查询账户"""
         self._reqid = self._reqid + 1
         self.reqQryTradingAccount({}, self._reqid)
-        
-    #----------------------------------------------------------------------
+
     def getInvestor(self):
         """查询投资者"""
         self._reqid = self._reqid + 1
         self.reqQryInvestor({}, self._reqid)
-        
-    #----------------------------------------------------------------------
+
     def getPosition(self):
         """查询持仓"""
         self._reqid = self._reqid + 1
@@ -872,8 +750,7 @@ class DemoTdApi(TdApi):
         req['BrokerID'] = self._brokerid
         req['InvestorID'] = self._userid
         self.reqQryInvestorPosition(req, self._reqid)
-        
-    #----------------------------------------------------------------------
+
     def sendOrder(self, instrumentid, exchangeid, price, pricetype, volume, direction, offset):
         """发单"""
         self._reqid = self._reqid + 1
@@ -904,8 +781,7 @@ class DemoTdApi(TdApi):
         
         # 返回订单号，便于某些算法进行动态管理
         return self.__orderref
-    
-    #----------------------------------------------------------------------
+ 
     def cancelOrder(self, instrumentid, exchangeid, orderref, frontid, sessionid):
         """撤单"""
         self._reqid = self._reqid + 1
@@ -922,8 +798,7 @@ class DemoTdApi(TdApi):
         req['InvestorID'] = self._userid
         
         self.reqOrderAction(req, self._reqid)
-    
-    #----------------------------------------------------------------------
+
     def getSettlement(self):
         """查询结算信息"""
         self._reqid = self._reqid + 1
@@ -933,8 +808,7 @@ class DemoTdApi(TdApi):
         req['InvestorID'] = self._userid
         
         self.reqQrySettlementInfo(req, self._reqid)
-        
-    #----------------------------------------------------------------------
+
     def confirmSettlement(self):
         """确认结算信息"""
         self._reqid = self._reqid + 1
@@ -943,4 +817,4 @@ class DemoTdApi(TdApi):
         req['BrokerID'] = self._brokerid
         req['InvestorID'] = self._userid
         
-        self.reqSettlementInfoConfirm(req, self._reqid)    
+        self.reqSettlementInfoConfirm(req, self._reqid)
