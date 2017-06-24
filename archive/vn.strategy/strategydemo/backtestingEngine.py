@@ -68,9 +68,9 @@ class BacktestingEngine(object):
     def connectMongo(self):
         """连接MongoDB数据库"""
         try:
-            self.__mongoConnection = Connection()
-            self.__mongoConnected = True
-            self.__mongoTickDB = self.__mongoConnection['TickDB']
+            self._mongoConnection = Connection()
+            self._mongoConnected = True
+            self._mongoTickDB = self._mongoConnection['TickDB']
             self.writeLog(u'回测引擎连接MongoDB成功')
         except ConnectionFailure:
             self.writeLog(u'回测引擎连接MongoDB失败') 
@@ -78,8 +78,8 @@ class BacktestingEngine(object):
     #----------------------------------------------------------------------
     def loadDataHistory(self, symbol, startDate, endDate):
         """载入历史TICK数据"""
-        if self.__mongoConnected:
-            collection = self.__mongoTickDB[symbol]
+        if self._mongoConnected:
+            collection = self._mongoTickDB[symbol]
             
             # 如果输入了读取TICK的最后日期
             if endDate:
